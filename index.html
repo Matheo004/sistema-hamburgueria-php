@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamburgueria Delivery</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+    <style>
+        /* Estilo para o corpo da página */
+        body {
+            background-color: #fbeee0;
+            font-family: 'Roboto', sans-serif;
+            text-align: center;
+            padding-top: 50px;
+            color: #382b22;
+        }
+
+        /* Animação para o logotipo */
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .logo {
+            width: 150px; 
+            height: auto;
+            animation: fadeInDown 1.5s ease-out; /* Aplica a animação ao logotipo */
+        }
+
+        /* Estilo para o título principal (h1) */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        
+        h1 {
+            font-size: 52px;
+            color: #d9534f;
+            margin: 0;
+            font-family: 'Montserrat', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 2s ease-out; /* Animação para o título */
+            letter-spacing: 2px; /* Adiciona espaçamento entre as letras */
+        }
+
+        /* Estilo para o parágrafo (p) */
+        p {
+            font-size: 16px;
+            margin-top: 10px;
+            color: #5a3c2c;
+            animation: fadeIn 2.5s ease-out; /* Animação para o parágrafo */
+        }
+
+        /* Estilo para o menu de navegação */
+        nav {
+            margin-top: 30px;
+            animation: fadeIn 3s ease-out;
+        }
+
+        .main-menu {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+        }
+
+        .main-menu li a {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 700;
+            color: #d9534f;
+            text-decoration: none;
+            padding: 10px 20px;
+            transition: color 0.3s;
+        }
+
+        .main-menu li a:hover {
+            color: #f0ad4e;
+        }
+        
+        /* Estilo para a classe 'button-container' */
+        .button-container {
+            margin-top: 40px;
+            text-align: center;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            animation: fadeIn 3.5s ease-out;
+        }
+        
+        /* Estilo para a classe 'button-link' */
+        .button-link {
+            display: inline-block;
+            background-color: #f0ad4e;
+            color: #fff;
+            padding: 14px 28px;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        
+        /* Efeito de hover para a classe 'button-link' */
+        .button-link:hover {
+            background-color: #eea236;
+            transform: translateY(-4px) scale(1.03);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.25);
+        }
+
+        /* Estilo para o ícone */
+        .button-link i {
+            margin-right: 10px;
+        }
+
+        /* Estilo para a nova seção de gestão */
+        .management-section {
+            margin-top: 50px;
+            background-color: rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            animation: fadeIn 4s ease-out;
+        }
+
+        .management-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: #d9534f;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <img src="imagens/Logotipo burger serrone.png" class="logo">
+
+    <h1>Serrone Burger</h1>
+    
+    <p>Aluno: Matheo Serrone Ribeiro Barbosa - Turma:TI63 - Curso: Aplicação Banco de Dados (MANHÃ) </p>
+    
+    <nav>
+        <ul class="main-menu">
+            <li><a href="index.html"><i class="fas fa-home"></i> Início</a></li>
+            <li><a href="cardapio.php"><i class="fas fa-hamburger"></i> Cardápio</a></li>
+            <li><a href="promocoes.php"><i class="fas fa-bullhorn"></i> Promoções</a></li>
+            <li><a href="contato.html"><i class="fas fa-envelope"></i> Contato</a></li>
+        </ul>
+    </nav>
+    
+    <div class="management-section">
+        <h2>Painel de Gestão</h2>
+        <div class="button-container">
+            <a href="cadastro_cliente.php" class="button-link"><i class="fas fa-users"></i> Gestão de Clientes</a>
+            <a href="cadastro_produto.php" class="button-link"><i class="fas fa-box"></i> Gestão de Produtos</a>
+            <a href="cadastro_pedido.php" class="button-link"><i class="fas fa-clipboard-list"></i> Gestão de Pedidos</a>
+            <a href="venda.php" class="button-link"><i class="fas fa-cash-register"></i> Gestão de Vendas</a>
+            <a href="relatorios.php" class="button-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
+        </div>
+    </div>
+</body>
+</html>

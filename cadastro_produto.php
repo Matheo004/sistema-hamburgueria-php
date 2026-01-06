@@ -1,0 +1,134 @@
+<?php
+
+// Configurações do banco de dados
+$servername = "localhost";
+$username = "Matheo_Serrone";
+$password = "Ribeiro@04";
+$dbname = "DB_TI63_Matheo";
+
+// Cria a conexão
+$conn = new mysqli($servername, $username, $password, $dbname);
+
+// Verifica a conexão
+if ($conn->connect_error) {
+    die("Falha na conexão: " . $conn->connect_error);
+}
+
+$mensagem = "";
+$resultados = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    if (isset($_POST['cadastrar_produto'])) {
+        $nome_produto = $conn->real_escape_string($_POST['nome_produto']);
+        $descricao_produto = $conn->real_escape_string($_POST['descricao_produto']);
+        $valor_produto = $conn->real_escape_string($_POST['valor_produto']);
+
+        $sql = "INSERT INTO produto (nome_produto, descricao_produto, valor_produto) VALUES ('$nome_produto', '$descricao_produto', '$valor_produto')";
+        
+        if ($conn->query($sql) === TRUE) {
+            $mensagem = "<p class='success'>✅ Produto cadastrado com sucesso!</p>";
+        } else {
+            $mensagem = "<p class='error'>❌ Erro ao cadastrar: " . $conn->error . "</p>";
+        }
+    }
+
+    if (isset($_POST['pesquisar_produto'])) {
+        $buscar_nome = $conn->real_escape_string($_POST['buscar_nome']);
+        $sql_busca = "SELECT id_produto, nome_produto, descricao_produto, valor_produto FROM produto WHERE nome_produto LIKE '%$buscar_nome%' ORDER BY nome_produto";
+        $result_busca = $conn->query($sql_busca);
+        
+        if ($result_busca->num_rows > 0) {
+            $resultados .= "<table>";
+            $resultados .= "<tr><th>ID</th><th>Nome</th><th>Descrição</th><th>Valor</th></tr>";
+            while($row = $result_busca->fetch_assoc()) {
+                $resultados .= "<tr>";
+                $resultados .= "<td>" . $row['id_produto'] . "</td>";
+                $resultados .= "<td>" . htmlspecialchars($row['nome_produto']) . "</td>";
+                $resultados .= "<td>" . htmlspecialchars($row['descricao_produto']) . "</td>";
+                $resultados .= "<td>R$ " . number_format($row['valor_produto'], 2, ',', '.') . "</td>";
+                $resultados .= "</tr>";
+            }
+            $resultados .= "</table>";
+        } else {
+            $resultados = "<p class='info'>Nenhum produto encontrado com o nome \"$buscar_nome\".</p>";
+        }
+    }
+}
+
+$conn->close();
+
+?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestão de Produtos - Serrone Burger</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&family=Roboto:wght@400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body { font-family: 'Roboto', sans-serif; background-color: #fbeee0; color: #382b22; padding: 20px; }
+        .container { max-width: 900px; margin: 20px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.1); }
+        h1, h2 { font-family: 'Montserrat', sans-serif; color: #d9534f; text-align: center; margin-bottom: 20px; }
+        .button-container { text-align: center; margin-bottom: 30px; }
+        .button-link { display: inline-block; margin: 10px; padding: 12px 25px; font-size: 16px; background-color: #f0ad4e; color: #fff; border: none; border-radius: 8px; cursor: pointer; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); transition: all 0.3s ease; text-decoration: none; }
+        .button-link:hover { background-color: #eea236; transform: translateY(-2px); box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15); }
+        .button-link i { margin-right: 8px; }
+        .form-section { background-color: #f8f8f8; padding: 25px; border-radius: 8px; margin-bottom: 30px; }
+        .form-group { margin-bottom: 15px; text-align: left; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #5a3c2c; }
+        .form-group input[type="text"], .form-group input[type="number"] { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+        .form-group input[type="submit"] { background-color: #d9534f; color: white; padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer; transition: background-color 0.3s; }
+        .form-group input[type="submit"]:hover { background-color: #c9302c; }
+        .success { color: green; font-weight: bold; }
+        .error { color: red; font-weight: bold; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: #f0ad4e; color: #fff; }
+        tr:nth-child(even) { background-color: #f2f2f2; }
+        .info { text-align: center; font-style: italic; color: #777; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gestão de Produtos</h1>
+        
+        <div class="button-container">
+            <a href="index.html" class="button-link"><i class="fas fa-home"></i> Início</a>
+            <a href="cardapio.php" class="button-link"><i class="fas fa-hamburger"></i> Cardápio</a>
+            <a href="promocoes.php" class="button-link"><i class="fas fa-bullhorn"></i> Promoções</a>
+            <a href="contato.html" class="button-link"><i class="fas fa-envelope"></i> Contato</a>
+            <a href="cadastro_cliente.php" class="button-link"><i class="fas fa-users"></i> Gestão de Clientes</a>
+            <a href="cadastro_produto.php" class="button-link"><i class="fas fa-box"></i> Gestão de Produtos</a>
+            <a href="cadastro_pedido.php" class="button-link"><i class="fas fa-clipboard-list"></i> Gestão de Pedidos</a>
+            <a href="venda.php" class="button-link"><i class="fas fa-cash-register"></i> Gestão de Vendas</a>
+            <a href="relatorios.php" class="button-link"><i class="fas fa-chart-bar"></i> Relatórios</a>
+        </div>
+
+        <?php echo $mensagem; ?>
+        
+        <div class="form-section">
+            <h2>Cadastrar Novo Produto</h2>
+            <form method="post">
+                <div class="form-group"><label for="nome_produto">Nome do Produto:</label><input type="text" id="nome_produto" name="nome_produto" required></div>
+                <div class="form-group"><label for="descricao_produto">Descrição:</label><input type="text" id="descricao_produto" name="descricao_produto"></div>
+                <div class="form-group"><label for="valor_produto">Valor:</label><input type="number" step="0.01" id="valor_produto" name="valor_produto" required></div>
+                <div class="form-group"><input type="submit" name="cadastrar_produto" value="Cadastrar Produto"></div>
+            </form>
+        </div>
+
+        <div class="form-section">
+            <h2>Pesquisar Produto</h2>
+            <form method="post" action="#resultados">
+                <div class="form-group"><label for="buscar_nome">Nome do Produto:</label><input type="text" id="buscar_nome" name="buscar_nome" required></div>
+                <div class="form-group"><input type="submit" name="pesquisar_produto" value="Pesquisar Produto"></div>
+            </form>
+            <div id="resultados">
+                <?php echo $resultados; ?>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
