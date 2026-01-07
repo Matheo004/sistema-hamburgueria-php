@@ -11,3 +11,6 @@ Este projeto é um sistema funcional focado na automação de processos de uma h
 - Cadastro e consulta de Clientes e Produtos.
 - Registro de Pedidos vinculado ao banco de dados.
 - Gestão de Vendas com filtros por forma de pagamento (Dinheiro, Cartão, PIX).
+
+## 🔗 Link do Projeto Online
+Acesse o sistema clicando aqui: [Serrone Burger](http://serroneburger.infinityfreeapp.com)
