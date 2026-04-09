@@ -2,7 +2,7 @@
 
 Este é um sistema de gestão interna desenvolvido para otimizar o fluxo de pedidos e o controle de vendas de uma hamburgueria. O projeto foca em agilidade para o atendente e organização de dados para o gestor.
 
-🔗 **[Acesse o sistema ao vivo aqui](LINK_DA_SUA_HOSPEDAGEM_AQUI)**
+🔗 **[Acesse o sistema ao vivo aqui](https://serroneburger.infinityfreeapp.com/)**
 
 ---
 
