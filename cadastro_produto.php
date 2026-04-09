@@ -1,13 +1,13 @@
 <?php
-
-// Configurações do banco de dados
-$servername = "localhost";
-$username = "Matheo_Serrone";
-$password = "Ribeiro@04";
-$dbname = "DB_TI63_Matheo";
+// Configurações do banco de dados (Ocultas para segurança no GitHub)
+$servername = "seu_servidor_aqui";
+$username = "seu_usuario_aqui";
+$password = "sua_senha_aqui";
+$dbname = "seu_banco_de_dados";
 
 // Cria a conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
+$conn->set_charset("utf8");
 
 // Verifica a conexão
 if ($conn->connect_error) {
@@ -19,24 +19,32 @@ $resultados = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+    // CADASTRO DE PRODUTO (Usando Prepared Statements)
     if (isset($_POST['cadastrar_produto'])) {
-        $nome_produto = $conn->real_escape_string($_POST['nome_produto']);
-        $descricao_produto = $conn->real_escape_string($_POST['descricao_produto']);
-        $valor_produto = $conn->real_escape_string($_POST['valor_produto']);
+        $nome_produto = $_POST['nome_produto'];
+        $descricao_produto = $_POST['descricao_produto'];
+        $valor_produto = $_POST['valor_produto'];
 
-        $sql = "INSERT INTO produto (nome_produto, descricao_produto, valor_produto) VALUES ('$nome_produto', '$descricao_produto', '$valor_produto')";
+        // Prepara a query para evitar ataques
+        $stmt = $conn->prepare("INSERT INTO produto (nome_produto, descricao_produto, valor_produto) VALUES (?, ?, ?)");
+        $stmt->bind_param("ssd", $nome_produto, $descricao_produto, $valor_produto);
         
-        if ($conn->query($sql) === TRUE) {
+        if ($stmt->execute()) {
             $mensagem = "<p class='success'>✅ Produto cadastrado com sucesso!</p>";
         } else {
             $mensagem = "<p class='error'>❌ Erro ao cadastrar: " . $conn->error . "</p>";
         }
+        $stmt->close();
     }
 
+    // PESQUISA DE PRODUTO (Usando Prepared Statements)
     if (isset($_POST['pesquisar_produto'])) {
-        $buscar_nome = $conn->real_escape_string($_POST['buscar_nome']);
-        $sql_busca = "SELECT id_produto, nome_produto, descricao_produto, valor_produto FROM produto WHERE nome_produto LIKE '%$buscar_nome%' ORDER BY nome_produto";
-        $result_busca = $conn->query($sql_busca);
+        $buscar_nome = "%" . $_POST['buscar_nome'] . "%";
+        
+        $stmt_busca = $conn->prepare("SELECT id_produto, nome_produto, descricao_produto, valor_produto FROM produto WHERE nome_produto LIKE ? ORDER BY nome_produto");
+        $stmt_busca->bind_param("s", $buscar_nome);
+        $stmt_busca->execute();
+        $result_busca = $stmt_busca->get_result();
         
         if ($result_busca->num_rows > 0) {
             $resultados .= "<table>";
@@ -51,13 +59,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             $resultados .= "</table>";
         } else {
-            $resultados = "<p class='info'>Nenhum produto encontrado com o nome \"$buscar_nome\".</p>";
+            $resultados = "<p class='info'>Nenhum produto encontrado.</p>";
         }
+        $stmt_busca->close();
     }
 }
 
 $conn->close();
-
 ?>
 
 <!DOCTYPE html>
