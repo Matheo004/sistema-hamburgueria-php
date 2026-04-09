@@ -1,12 +1,15 @@
 <?php
-// Configurações do banco de dados
-$servername = "localhost";
-$username = "Matheo_Serrone";
-$password = "Ribeiro@04";
-$dbname = "DB_TI63_Matheo";
+// Configurações do banco de dados (Substitua pelos seus dados reais localmente)
+$servername = "seu_servidor_aqui";
+$username = "seu_usuario_aqui";
+$password = "sua_senha_aqui";
+$dbname = "seu_banco_de_dados";
 
 // Cria a conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
+
+// Forçar UTF-8 para garantir que acentos e símbolos (como R$) apareçam corretamente
+$conn->set_charset("utf8");
 
 // Verifica a conexão
 if ($conn->connect_error) {
@@ -17,7 +20,7 @@ if ($conn->connect_error) {
 $sql_produtos = "SELECT id_produto, nome_produto, descricao_produto, valor_produto FROM produto";
 $result = $conn->query($sql_produtos);
 
-$conn->close();
+// Mantemos a conexão aberta para o loop no HTML e fechamos no final do arquivo
 ?>
 
 <!DOCTYPE html>
@@ -65,27 +68,26 @@ $conn->close();
         
         <div class="product-list">
             <?php
-            if ($result->num_rows > 0) {
+            if ($result && $result->num_rows > 0) {
                 while($row = $result->fetch_assoc()) {
-                    // Lógica para encontrar o caminho da imagem
                     $id_produto = $row['id_produto'];
                     $image_path = "imagens/produto_" . $id_produto;
                     $image_src = "";
 
-                    // Verifica se o arquivo .jpg existe
+                    // Mantida sua lógica original de verificação de extensão
                     if (file_exists($image_path . '.jpg')) {
                         $image_src = $image_path . '.jpg';
-                    // Se não existir, verifica se o arquivo .png existe
                     } elseif (file_exists($image_path . '.png')) {
                         $image_src = $image_path . '.png';
                     }
-
-                    // Se uma imagem foi encontrada, exibe o card do produto
-                    if ($image_src) {
                     ?>
                     <div class="product-card">
                         <div class="product-image">
-                            <img src="<?php echo $image_src; ?>" alt="<?php echo htmlspecialchars($row['nome_produto']); ?>">
+                            <?php if ($image_src): ?>
+                                <img src="<?php echo $image_src; ?>" alt="<?php echo htmlspecialchars($row['nome_produto']); ?>">
+                            <?php else: ?>
+                                <div style="background:#ddd; height:100%; display:flex; align-items:center; justify-content:center; color:#777;">Sem imagem</div>
+                            <?php endif; ?>
                         </div>
                         <div class="product-info">
                             <h3><?php echo htmlspecialchars($row['nome_produto']); ?></h3>
@@ -94,13 +96,16 @@ $conn->close();
                         </div>
                     </div>
                     <?php
-                    }
                 }
             } else {
-                echo "<p>Nenhum produto cadastrado no momento.</p>";
+                echo "<p style='text-align:center; width:100%;'>Nenhum produto cadastrado no momento.</p>";
             }
             ?>
         </div>
     </div>
 </body>
 </html>
+<?php 
+// Fechar a conexão ao final do processamento
+$conn->close(); 
+?>
