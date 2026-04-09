@@ -1,13 +1,13 @@
 <?php
-
-// Configurações do banco de dados
-$servername = "localhost";
-$username = "Matheo_Serrone";
-$password = "Ribeiro@04";
-$dbname = "DB_TI63_Matheo";
+// Configurações do banco de dados (Ocultas para segurança)
+$servername = "seu_servidor_aqui";
+$username = "seu_usuario_aqui";
+$password = "sua_senha_aqui";
+$dbname = "seu_banco_de_dados";
 
 // Cria a conexão
 $conn = new mysqli($servername, $username, $password, $dbname);
+$conn->set_charset("utf8");
 
 // Verifica a conexão
 if ($conn->connect_error) {
@@ -19,27 +19,34 @@ $resultados = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
+    // CADASTRAR CLIENTE (Seguro contra SQL Injection)
     if (isset($_POST['cadastrar'])) {
-        $nome = $conn->real_escape_string($_POST['nome']);
-        $cpf = $conn->real_escape_string($_POST['cpf']);
-        $endereco = $conn->real_escape_string($_POST['endereco']);
-        $estado = $conn->real_escape_string($_POST['estado']);
-        $telefone = $conn->real_escape_string($_POST['telefone']);
-        $email = $conn->real_escape_string($_POST['email']);
+        $nome = $_POST['nome'];
+        $cpf = $_POST['cpf'];
+        $endereco = $_POST['endereco'];
+        $estado = $_POST['estado'];
+        $telefone = $_POST['telefone'];
+        $email = $_POST['email'];
 
-        $sql = "INSERT INTO cliente (nome, cpf, endereco, estado, telefone, email) VALUES ('$nome', '$cpf', '$endereco', '$estado', '$telefone', '$email')";
+        $stmt = $conn->prepare("INSERT INTO cliente (nome, cpf, endereco, estado, telefone, email) VALUES (?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssss", $nome, $cpf, $endereco, $estado, $telefone, $email);
         
-        if ($conn->query($sql) === TRUE) {
+        if ($stmt->execute()) {
             $mensagem = "<p class='success'>✅ Cliente cadastrado com sucesso!</p>";
         } else {
             $mensagem = "<p class='error'>❌ Erro ao cadastrar: " . $conn->error . "</p>";
         }
+        $stmt->close();
     }
 
+    // PESQUISAR CLIENTE (Seguro contra SQL Injection)
     if (isset($_POST['pesquisar'])) {
-        $buscar_nome = $conn->real_escape_string($_POST['buscar_nome']);
-        $sql_busca = "SELECT id_cliente, nome, cpf, endereco, estado, telefone, email FROM cliente WHERE nome LIKE '%$buscar_nome%' ORDER BY nome";
-        $result_busca = $conn->query($sql_busca);
+        $buscar_nome = "%" . $_POST['buscar_nome'] . "%";
+        
+        $stmt_busca = $conn->prepare("SELECT id_cliente, nome, cpf, endereco, estado, telefone, email FROM cliente WHERE nome LIKE ? ORDER BY nome");
+        $stmt_busca->bind_param("s", $buscar_nome);
+        $stmt_busca->execute();
+        $result_busca = $stmt_busca->get_result();
         
         if ($result_busca->num_rows > 0) {
             $resultados .= "<table>";
@@ -57,13 +64,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             }
             $resultados .= "</table>";
         } else {
-            $resultados = "<p class='info'>Nenhum cliente encontrado com o nome \"$buscar_nome\".</p>";
+            $resultados = "<p class='info'>Nenhum cliente encontrado.</p>";
         }
+        $stmt_busca->close();
     }
 }
 
 $conn->close();
-
 ?>
 
 <!DOCTYPE html>
