@@ -1,12 +1,12 @@
 <?php
-
-// Conexão com o banco de dados
-$servername = "localhost";
-$username = "Matheo_Serrone";
-$password = "Ribeiro@04";
-$dbname = "DB_TI63_Matheo";
+// Configurações do banco de dados (Ocultas para segurança)
+$servername = "seu_servidor_aqui";
+$username = "seu_usuario_aqui";
+$password = "sua_senha_aqui";
+$dbname = "seu_banco_de_dados";
 
 $conexao = new mysqli($servername, $username, $password, $dbname);
+$conexao->set_charset("utf8");
 
 if ($conexao->connect_error) {
     die("Falha na conexão: " . $conexao->connect_error);
@@ -14,33 +14,68 @@ if ($conexao->connect_error) {
 
 $mensagem = "";
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (isset($_POST['confirmar'])) {
-        $id_cliente = $_POST['id_cliente'];
-        $forma_pagamento = $_POST['forma_pagamento'];
-        $produtos_selecionados = $_POST['produtos'];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['confirmar'])) {
+    $id_cliente = $_POST['id_cliente'];
+    $forma_pagamento = $_POST['forma_pagamento'];
+    $produtos_selecionados = $_POST['produtos'];
 
-        $conexao->query("INSERT INTO pedido (id_cliente, status_pedido) VALUES ('$id_cliente', 'finalizado')");
+    // INÍCIO DA TRANSAÇÃO: Segurança para garantir que o pedido completo seja gravado
+    $conexao->begin_transaction();
+
+    try {
+        // 1. Inserir Pedido
+        $stmt_ped = $conexao->prepare("INSERT INTO pedido (id_cliente, status_pedido) VALUES (?, 'finalizado')");
+        $stmt_ped->bind_param("i", $id_cliente);
+        $stmt_ped->execute();
         $id_pedido = $conexao->insert_id;
+        $stmt_ped->close();
+
         $valor_total = 0;
 
+        // 2. Inserir Itens do Pedido
         foreach ($produtos_selecionados as $id_produto) {
-            $quantidade = isset($_POST["quantidade_" . $id_produto]) ? $_POST["quantidade_" . $id_produto] : 0;
+            $campo_qtd = "quantidade_" . $id_produto;
+            $quantidade = isset($_POST[$campo_qtd]) ? (int)$_POST[$campo_qtd] : 0;
+
             if ($quantidade > 0) {
-                $consulta_valor = $conexao->query("SELECT valor_produto FROM produto WHERE id_produto = '$id_produto'");
-                $valor_unitario = $consulta_valor->fetch_assoc()['valor_produto'];
-                $subtotal = $valor_unitario * $quantidade;
-                $valor_total += $subtotal;
-                $conexao->query("INSERT INTO item_pedido (id_pedido, id_produto, quantidade, subtotal) VALUES ('$id_pedido', '$id_produto', '$quantidade', '$subtotal')");
+                // Buscar valor unitário com segurança
+                $stmt_val = $conexao->prepare("SELECT valor_produto FROM produto WHERE id_produto = ?");
+                $stmt_val->bind_param("i", $id_produto);
+                $stmt_val->execute();
+                $res_val = $stmt_val->get_result();
+                $produto_info = $res_val->fetch_assoc();
+                
+                if ($produto_info) {
+                    $valor_unitario = $produto_info['valor_produto'];
+                    $subtotal = $valor_unitario * $quantidade;
+                    $valor_total += $subtotal;
+
+                    // Inserir item_pedido
+                    $stmt_item = $conexao->prepare("INSERT INTO item_pedido (id_pedido, id_produto, quantidade, subtotal) VALUES (?, ?, ?, ?)");
+                    $stmt_item->bind_param("iiid", $id_pedido, $id_produto, $quantidade, $subtotal);
+                    $stmt_item->execute();
+                    $stmt_item->close();
+                }
+                $stmt_val->close();
             }
         }
         
-        $conexao->query("INSERT INTO venda (id_pedido, data_venda, forma_pagamento, total_venda) VALUES ('$id_pedido', NOW(), '$forma_pagamento', '$valor_total')");
+        // 3. Inserir Venda
+        $stmt_venda = $conexao->prepare("INSERT INTO venda (id_pedido, data_venda, forma_pagamento, total_venda) VALUES (?, NOW(), ?, ?)");
+        $stmt_venda->bind_param("isd", $id_pedido, $forma_pagamento, $valor_total);
+        $stmt_venda->execute();
+        $stmt_venda->close();
 
+        // Se chegou aqui sem erros, confirma tudo no banco
+        $conexao->commit();
         $mensagem = "<p class='success'>✅ Pedido registrado com sucesso! Total: R$ " . number_format($valor_total, 2, ',', '.') . "</p>";
+
+    } catch (Exception $e) {
+        // Se algo deu errado, desfaz todas as inserções para não sujar o banco
+        $conexao->rollback();
+        $mensagem = "<p class='error'>❌ Erro ao registrar pedido: " . $e->getMessage() . "</p>";
     }
 }
-
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -142,3 +177,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     </div>
 </body>
 </html>
+<?php $conexao->close(); ?>
